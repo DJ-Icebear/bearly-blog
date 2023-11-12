@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://bearly.tech
+
+# Sitemaps
+Sitemap: https://bearly.tech/sitemap.xml
