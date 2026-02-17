@@ -5,6 +5,7 @@ import { idToUuid } from "notion-utils"
 import getAllPageIds from "src/libs/utils/notion/getAllPageIds"
 import getPageProperties from "src/libs/utils/notion/getPageProperties"
 import { TPosts } from "src/types"
+import { Block, ExtendedRecordMap } from "notion-types"
 
 /**
  * @param {{ includePages: boolean }} - false: posts only / true: include pages
@@ -12,21 +13,26 @@ import { TPosts } from "src/types"
 
 // TODO: react query를 사용해서 처음 불러온 뒤로는 해당데이터만 사용하도록 수정
 export const getPosts = async () => {
-  let id = CONFIG.notionConfig.pageId as string
+  let pageId = CONFIG.notionConfig.pageId as string
   const api = new NotionAPI()
 
-  const response = await api.getPage(id)
-  id = idToUuid(id)
+  const response = await api.getPage(pageId)
+  pageId = idToUuid(pageId)
   const collection = Object.values(response.collection)[0]?.value
   const block = response.block
-  const schema = collection?.schema
 
-  const rawMetadata = block[id].value
+  //@ts-ignore wrong in type definitions from notion-types
+  const schema = collection.value.schema
+
+  let rawMetaData = block[pageId].value
+  
+  //@ts-ignore wrong in type definitions from notion-types
+  rawMetaData = rawMetaData.value as Block
 
   // Check Type
   if (
-    rawMetadata?.type !== "collection_view_page" &&
-    rawMetadata?.type !== "collection_view"
+    rawMetaData?.type !== "collection_view_page" &&
+    rawMetaData?.type !== "collection_view"
   ) {
     return []
   } else {
@@ -35,6 +41,7 @@ export const getPosts = async () => {
     const data = []
     for (let i = 0; i < pageIds.length; i++) {
       const id = pageIds[i]
+
       const properties = (await getPageProperties(id, block, schema)) || null
       // Add fullwidth, createdtime to properties
       properties.createdTime = new Date(

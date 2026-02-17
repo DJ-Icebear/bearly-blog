@@ -9,9 +9,15 @@ async function getPageProperties(
   schema: CollectionPropertySchemaMap
 ) {
   const api = new NotionAPI()
-  const rawProperties = Object.entries(block?.[id]?.value?.properties || [])
+
+  let dbBlock = block[id].value
+  // @ts-ignore wrong in type definitions
+  dbBlock = dbBlock.value
+  
+  const rawProperties = Object.entries(dbBlock.properties || [])
   const excludeProperties = ["date", "select", "multi_select", "person", "file"]
   const properties: any = {}
+
   for (let i = 0; i < rawProperties.length; i++) {
     const [key, val]: any = rawProperties[i]
     properties.id = id
