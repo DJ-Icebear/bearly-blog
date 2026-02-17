@@ -44,11 +44,17 @@ export const getPosts = async () => {
 
       const properties = (await getPageProperties(id, block, schema)) || null
       // Add fullwidth, createdtime to properties
+      
+      let blockValue = block[id].value
+      //@ts-ignore erroneous in type package
+      blockValue = blockValue.value as Block
+      
       properties.createdTime = new Date(
-        block[id].value?.created_time
+        blockValue.created_time
       ).toString()
+
       properties.fullWidth =
-        (block[id].value?.format as any)?.page_full_width ?? false
+        (blockValue.format as any)?.page_full_width ?? false
 
       data.push(properties)
     }
