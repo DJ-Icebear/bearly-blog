@@ -6,6 +6,9 @@
     "type": "git",
     "url": "https://github.com/DJ-Icebear/bearly-tech.git"
   },
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
