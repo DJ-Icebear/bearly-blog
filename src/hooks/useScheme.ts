@@ -11,7 +11,7 @@ const useScheme = (): [SchemeType, SetScheme] => {
   const queryClient = useQueryClient()
   const followsSystemTheme = CONFIG.blog.scheme === "system"
 
-  const { data } = useQuery({
+  const { data } = useQuery<SchemeType>({
     queryKey: queryKey.scheme(),
     enabled: false,
     initialData: "dark",
