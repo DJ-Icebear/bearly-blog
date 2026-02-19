@@ -1,11 +1,10 @@
 import { CONFIG } from "site.config"
 import { NotionAPI } from "notion-client"
-import { idToUuid } from "notion-utils"
+import { getBlockValue, idToUuid } from "notion-utils"
 
 import getAllPageIds from "src/libs/utils/notion/getAllPageIds"
 import getPageProperties from "src/libs/utils/notion/getPageProperties"
 import { TPosts } from "src/types"
-import { Block, ExtendedRecordMap } from "notion-types"
 
 /**
  * @param {{ includePages: boolean }} - false: posts only / true: include pages
@@ -18,21 +17,18 @@ export const getPosts = async () => {
 
   const response = await api.getPage(pageId)
   pageId = idToUuid(pageId)
+
   const collection = Object.values(response.collection)[0]?.value
-  const block = response.block
+  const schema = getBlockValue(collection)?.schema
+  if (!schema) throw `Missing schema for pageId: ${pageId}`
 
-  //@ts-ignore wrong in type definitions from notion-types
-  const schema = collection.value.schema
-
-  let rawMetaData = block[pageId].value
-  
-  //@ts-ignore wrong in type definitions from notion-types
-  rawMetaData = rawMetaData.value as Block
+  let block = getBlockValue(response.block[pageId])
+  if (!block) throw `Missing block for pageId: ${pageId}`
 
   // Check Type
   if (
-    rawMetaData?.type !== "collection_view_page" &&
-    rawMetaData?.type !== "collection_view"
+    block.type !== "collection_view_page" &&
+    block.type !== "collection_view"
   ) {
     return []
   } else {
@@ -42,19 +38,15 @@ export const getPosts = async () => {
     for (let i = 0; i < pageIds.length; i++) {
       const id = pageIds[i]
 
-      const properties = (await getPageProperties(id, block, schema)) || null
-      // Add fullwidth, createdtime to properties
-      
-      let blockValue = block[id].value
-      //@ts-ignore erroneous in type package
-      blockValue = blockValue.value as Block
-      
+      const properties = (await getPageProperties(id, response.block, schema)) || null
+
+      // Add fullwidth & createdtime to properties
       properties.createdTime = new Date(
-        blockValue.created_time
+        block.created_time
       ).toString()
 
       properties.fullWidth =
-        (blockValue.format as any)?.page_full_width ?? false
+        (block.format as any)?.page_full_width ?? false
 
       data.push(properties)
     }

@@ -1,20 +1,19 @@
-import { getTextContent, getDateValue } from "notion-utils"
+import { getTextContent, getDateValue, getBlockValue } from "notion-utils"
 import { NotionAPI } from "notion-client"
-import { CollectionPropertySchemaMap, Block, BlockMap } from "notion-types"
+import { CollectionPropertySchemaMap, BlockMap } from "notion-types"
 import { customMapImageUrl } from "./customMapImageUrl"
 
 async function getPageProperties(
   id: string,
-  block: BlockMap,
+  blockMap: BlockMap,
   schema: CollectionPropertySchemaMap
 ) {
   const api = new NotionAPI()
 
-  let dbBlock = block[id].value
-  // @ts-ignore wrong in type definitions
-  dbBlock = dbBlock.value as Block
+  const blockValues = getBlockValue(blockMap[id])
+  if (!blockValues) throw `Missing block for pageId: ${id}`
 
-  const rawProperties = Object.entries(dbBlock.properties || [])
+  const rawProperties = Object.entries(blockValues?.properties || [])
   const excludeProperties = ["date", "select", "multi_select", "person", "file"]
   const properties: any = {}
 
@@ -27,9 +26,8 @@ async function getPageProperties(
       switch (schema[key]?.type) {
         case "file": {
           try {
-            const Block = block?.[id].value as Block
             const url: string = val[0][1][0][1]
-            const newurl = customMapImageUrl(url, Block)
+            const newurl = customMapImageUrl(url, blockValues)
             properties[schema[key].name] = newurl
           } catch (error) {
             properties[schema[key].name] = undefined
