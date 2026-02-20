@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react"
 import PostCard from "src/routes/Feed/PostList/PostCard"
 import { DEFAULT_CATEGORY } from "src/constants"
 import usePostsQuery from "src/hooks/usePostsQuery"
+import useMediaQuery from "src/hooks/useMediaQuery"
 
 type Props = {
   q: string
@@ -11,6 +12,7 @@ type Props = {
 const PostList: React.FC<Props> = ({ q }) => {
   const router = useRouter()
   const data = usePostsQuery()
+  const isDesktop = useMediaQuery("(min-width: 768px)")
   const [filteredPosts, setFilteredPosts] = useState(data)
 
   const currentTag = `${router.query.tag || ``}` || undefined
@@ -56,8 +58,8 @@ const PostList: React.FC<Props> = ({ q }) => {
         {!filteredPosts.length && (
           <p className="text-gray-500 dark:text-gray-300">Nothing! 😺</p>
         )}
-        {filteredPosts.map((post) => (
-          <PostCard key={post.id} data={post} />
+        {filteredPosts.map((post, index) => (
+          <PostCard key={post.id} data={post} priority={isDesktop ? index < 2 : index === 0} />
         ))}
       </div>
     </>

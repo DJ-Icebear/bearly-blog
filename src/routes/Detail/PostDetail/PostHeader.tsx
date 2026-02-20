@@ -56,6 +56,8 @@ const PostHeader: React.FC<Props> = ({ data }) => {
                 css={{ objectFit: "cover" }}
                 fill
                 alt={data.title}
+                sizes="(max-width: 1024px) 100vw, 900px"
+                priority
               />
             </div>
           )}
