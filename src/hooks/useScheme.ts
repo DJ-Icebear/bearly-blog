@@ -33,6 +33,7 @@ const useScheme = (): [SchemeType, SetScheme] => {
         : "light"
       : data
     setScheme(cachedScheme || defaultScheme)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return [data, setScheme]
